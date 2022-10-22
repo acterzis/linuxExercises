@@ -1,24 +1,19 @@
 #!/bin/bash
-column = $1
 
-echo "usage:mean.sh <column> [file.csv]"
-
-if [[$# -eq 2]]; then
-    file = $2
-elif [[$# -eq 1]]; then
-     file = /dev/stdin
-else
-    echo "none"
+if [[ $# -eq 0 ]]; then # if user gives no column and no file, return error message
+    echo "usage: $0 <column> [file.csv]" 1>&2
+elif  [[ $# -eq 1 ]]; then
+    echo "1"
+else # if user give column and file, cut the column, remove the header, calculate mean
+    echo $(cut -d, -f $1 $2 | tail +2 |
+	       { sum=0; line=0;
+		 while read n
+		 do sum=$(($sum + $n))
+		    line=$(($line + 1))
+		 done
+		 mean=$(($sum/$line | bc))
+		 echo  "The mean of column $1 in file: $2 is $mean"; })
 fi
 
-cut $file -d, -f $column |
-    tail -n + 2 |
-    {sum=0;
-     total=0;
-     while read value; do
-	 sum=$(($sum + $value));
-	 total=$(($total + 1));
-     done;
-     average=$(echo "scale = 4; $sum/$total" | bc);
-     echo $average;
-}
+
+    
